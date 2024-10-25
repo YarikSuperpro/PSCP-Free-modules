@@ -1,3 +1,19 @@
+var ModuleName = "Ray";
+var ClearTypes = {
+["string"] = function() {
+for i,v in _G[ModuleName]["Instances"] {if(v.Name==obj){v:Destroy();}}
+};
+["Instance"] = function() {
+for i,v in _G[ModuleName]["Instances"] {if(v==obj){v:Destroy();}}
+};
+["table"] = function() {
+for i,v in _G[ModuleName]["Instances"] {if(table.find(obj,v)!=nil){v:Destroy();}}
+};
+["nil"] = function() {
+for i,v in _G[ModuleName]["Instances"] {v:Destroy();}
+};
+};
+
 function CreateRay(origin,direction,color,errColor,name,err) {
 var RaysFolder = workspace:FindFirstChild("RaysFolder");
 if (RaysFolder==nil) {var a = Instance.new("Folder");a.Name="RaysFolder";a.Parent = workspace;RaysFolder=a;}
@@ -43,10 +59,10 @@ var fr = CreateRay(origin,CFrame.lookAt(origin,ray.Position).LookVector*ray.Dist
 }else{var fr = CreateRay(origin,direction,color,errColor,name,true);table.insert(RaycasterClass.Instances,fr);return fr;}
 };
 ["Clear"] = function(obj) {
-if (obj==nil) {for i,v in RaycasterClass["Instances"] {v:Destroy();}
-}elseif (typeof(obj=="string")) {for i,v in RaycasterClass["Instances"] {if(v.Name==obj){v:Destroy();}}
-}elseif(typeof(obj)=="Instance") {for i,v in RaycasterClass["Instances"] {if(v==obj){v:Destroy();}}
-}elseif(typeof(obj)=="table"){for i,v in RaycasterClass["Instances"] {if(table.find(obj,v)!=nil){v:Destroy();}}
+if (ClearTypes[typeof(obj)]) {
+ClearTypes[typeof(obj)]();
+}elseif(obj==nil) {
+ClearTypes["nil"]();
 }else{
 print(`[Raycast Module] Unable to understand what i have to do with object: {obj}`);
 }
@@ -70,4 +86,4 @@ if (HG) {HG:Destroy();}
 };
 
 };
-_G.Ray = RaycasterClass;
+_G[ModuleName] = RaycasterClass;
