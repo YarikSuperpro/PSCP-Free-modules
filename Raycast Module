@@ -1,0 +1,73 @@
+function CreateRay(origin,direction,color,errColor,name,err) {
+var RaysFolder = workspace:FindFirstChild("RaysFolder");
+if (RaysFolder==nil) {var a = Instance.new("Folder");a.Name="RaysFolder";a.Parent = workspace;RaysFolder=a;}
+	var part = Instance.new("Part");
+	name=name or "RayCastVisual";
+	part.Name=name;
+	color = color;
+	errColor = errColor or Color3.new(1, 0, 0);
+	if (err==nil) {color=Color3.new(0.14902, 1, 0);}else{color=errColor;}	
+	part.Parent = model;
+	part.Color=color;
+	part.Material=Enum.Material.Neon;
+	part.Anchored = true;
+	part.CanCollide = false;
+	part.CanQuery=false;
+	part.CanTouch=false;
+	part.CastShadow=false;
+	part.Transparency=0.65;
+	var origin2 = origin+direction;
+	var lengh = (origin-origin2).Magnitude;
+	var Look = CFrame.lookAt(origin,origin2)*CFrame.Angles(0,math.rad(90),0);
+	part.CFrame = Look*CFrame.new((lengh/2),0,0);
+	part.Size = Vector3.new(lengh,0.05,0.05);
+	part.Parent = RaysFolder;
+	return part;
+}
+var RaycasterClass = {
+["Instances"]={};
+["new"] = function(origin,direction,params,color,errColor,name) {
+var CustomParams = RaycastParams.new();
+if (params!=nil and params!=false) {
+CustomParams.FilterType = params.FilterType or Enum.RaycastFilterType.Exclude;
+CustomParams.IgnoreWater = params.IgnoreWater or false;
+CustomParams.CollisionGroup = params.CollisionGroup;
+CustomParams.RespectCanCollide = params.RespectCanCollide or false;
+CustomParams.BruteForceAllSlow = params.BruteForceAllSlow or false;
+CustomParams.AddToFilter(CustomParams,RaycasterClass["Instances"]);
+}
+if (params==false) {var fr = CreateRay(origin,direction,color,errColor,name);table.insert(RaycasterClass.Instances,fr);return fr;}
+var ray = workspace:Raycast(origin,direction,CustomParams);
+if (ray) {
+var fr = CreateRay(origin,CFrame.lookAt(origin,ray.Position).LookVector*ray.Distance,color,errColor,name);table.insert(RaycasterClass.Instances,fr);return fr;
+}else{var fr = CreateRay(origin,direction,color,errColor,name,true);table.insert(RaycasterClass.Instances,fr);return fr;}
+};
+["Clear"] = function(obj) {
+if (obj==nil) {for i,v in RaycasterClass["Instances"] {v:Destroy();}
+}elseif (typeof(obj=="string")) {for i,v in RaycasterClass["Instances"] {if(v.Name==obj){v:Destroy();}}
+}elseif(typeof(obj)=="Instance") {for i,v in RaycasterClass["Instances"] {if(v==obj){v:Destroy();}}
+}elseif(typeof(obj)=="table"){for i,v in RaycasterClass["Instances"] {if(table.find(obj,v)!=nil){v:Destroy();}}
+}else{
+print(`[Raycast Module] Unable to understand what i have to do with object: {obj}`);
+}
+};
+["Toggle"] = function(Color,Transparency) {
+var RaysFolder = workspace:FindFirstChild("RaysFolder");
+if (RaysFolder==nil) {var a = Instance.new("Folder");a.Name="RaysFolder";a.Parent = workspace;RaysFolder=a;}
+var HG = RaysFolder:FindFirstChildOfClass("Highlight");
+if (HG) {HG:Destroy();}
+var h = Instance.new("Highlight");
+h.FillColor = Color or Color3.new(0,1,0);
+h.FillTransparency = Transparency or 0.5;
+h.Parent = RaysFolder;
+h.Adornee = RaysFolder;
+};
+["Stop"] = function() {
+var RaysFolder = workspace:FindFirstChild("RaysFolder");
+if (RaysFolder==nil) {var a = Instance.new("Folder");a.Name="RaysFolder";a.Parent = workspace;RaysFolder=a;}
+var HG = RaysFolder:FindFirstChildOfClass("Highlight");
+if (HG) {HG:Destroy();}
+};
+
+};
+_G.Ray = RaycasterClass;
